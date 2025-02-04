@@ -53,10 +53,13 @@ if [ "$1" == "import" ]; then
     # Initialize PostgreSQL
     createPostgresConfig
     service postgresql start
-    sudo -u postgres createuser renderer || echo "WARN ignore createuser as postgres : user 'renderer' already exists."
-    sudo -u postgres createdb -E UTF8 -O renderer gis
-    sudo -u postgres psql -d gis -c "CREATE EXTENSION postgis;"
-    sudo -u postgres psql -d gis -c "CREATE EXTENSION hstore;"
+    if [sudo -u postgres createuser renderer]; then
+        sudo -u postgres createdb -E UTF8 -O renderer gis
+        sudo -u postgres psql -d gis -c "CREATE EXTENSION postgis;"
+        sudo -u postgres psql -d gis -c "CREATE EXTENSION hstore;"
+    else
+         echo "WARN ignore createuser as postgres : user 'renderer' already exists."
+    fi
     sudo -u postgres psql -d gis -c "ALTER TABLE geometry_columns OWNER TO renderer;"
     sudo -u postgres psql -d gis -c "ALTER TABLE spatial_ref_sys OWNER TO renderer;"
     setPostgresPassword
